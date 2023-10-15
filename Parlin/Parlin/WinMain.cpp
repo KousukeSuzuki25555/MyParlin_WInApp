@@ -1,12 +1,17 @@
 ﻿#include <windows.h>
+#include <stdlib.h>
+#include <time.h>
+#include "Parlin.h"
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-int rectWidth = 100;
-int rectHeight = 100;
+int rectWidth = 30;
+int rectHeight = 30;
+int scale = 1;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PSTR szCmdLine, int iCmdShow) {
+    srand((unsigned)time(NULL));
     static TCHAR szAppName[] = TEXT("PerlinNoise");
     HWND hwnd;
     MSG msg;
