@@ -1,5 +1,6 @@
 #pragma once
 #include "resource.h"
+#include <windows.h>
 #include <iostream>
 #include <cmath>
 #include <ctime>
@@ -13,6 +14,8 @@
 
 class PerlinNoise {
 public:
+    //コンストラクタ
+    PerlinNoise();
     // パーリンノイズ関数の前方宣言
     float perlinNoise(float x, float y);
     // フェード関数の前方宣言
@@ -26,12 +29,38 @@ public:
     //初期化
     void Init();
     //データ受け取り
+    //色
     void GetColor(int x, int y);
+    //矩形サイズ
+    std::pair<int, int> GetRectSize();
+    //描画するピクセルサイズ
+    std::pair<int, int>GetPixelSize();
+    //データセット
+    void SetRectSize(std:: pair<int, int>temp);
+
 private:
     // パーリンノイズに使用するランダムな値の配列
     int p[RAND_ARRAY_SIZE];
+    float freqency; //周波数
+    int rectWidth;  //矩形のサイズ
+    int rectHeight;
+    int scale;  //倍率
+    int pixelSize;
+    int outputWidth;    //描画する際のサイズ
+    int outputHeight;
+    std::vector<std::vector< COLORREF>>colorArray;
 };
 
+//コンストラクタ
+PerlinNoise::PerlinNoise() {
+    std::fill(p, p + RAND_ARRAY_SIZE, 0);
+    rectWidth = 30;
+    rectHeight = 30;
+    scale = 1;
+    freqency = 0.1f;
+    outputWidth = rectWidth * (scale / freqency);
+    outputHeight = rectHeight * (scale / freqency);
+}
 
 // パーリンノイズ関数
 float PerlinNoise::perlinNoise(float x, float y) {
@@ -67,8 +96,17 @@ float PerlinNoise::grad(int hash, float x, float y) {
 }
 
 //実行関数
-void PerlinNoise::Act(int sizeX, int sizeY, float frequency) {
+void PerlinNoise::Act(int sizeX, int sizeY, float freqency) {
     Init();
+    this->freqency = freqency;
+    colorArray.resize(sizeY, std::vector<COLORREF>(sizeX, RGB(0, 0, 0)));
+    outputWidth = rectWidth * (scale / freqency);
+    outputHeight = rectHeight * (scale / freqency);
+    for (int y = 0; y < outputHeight; y++) {
+        for (int x = 0; x < outputWidth; x++) {
+            perlinNoise(x + freqency, y * freqency);
+        }
+    }
 }
 
 //初期化
@@ -79,6 +117,15 @@ void PerlinNoise::Init() {
 }
 
 //データ受け取り
-void PerlinNoise::GetColor(int x, int y) {
+void PerlinNoise::GetColor(int x, int y) {  //引数はoutputSizeに対応した座標
 
+}
+
+std::pair<int, int> PerlinNoise::GetRectSize() {
+    return std::pair<int, int>(rectWidth, rectHeight);
+}
+
+void PerlinNoise::SetRectSize(std::pair<int, int>temp) {
+    rectWidth = temp.first;
+    rectHeight = temp.second;
 }

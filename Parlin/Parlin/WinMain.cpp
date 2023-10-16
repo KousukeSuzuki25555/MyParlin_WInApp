@@ -10,20 +10,13 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 #define START_HEIGHT    (10)
 
 //グローバル変数
-int rectWidth = 30;
-int rectHeight = 30;
-int scale = 1;  //倍率
-PerlinNoise parlin;
-float freqency = 0.1f;
+PerlinNoise perlin;
 HFONT hFont;
-int pixelSize = 10;
-int outputWidth = rectWidth * (scale / freqency);
-int outputHeight = rectHeight * (scale / freqency);
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     _In_ PSTR szCmdLine, _In_ int iCmdShow) {
     srand((unsigned)time(NULL));
-    parlin.Act(rectWidth, rectHeight);
+    perlin.Act(30, 30, 0.1f);
     static TCHAR szAppName[] = TEXT("PerlinNoise");
     HWND hwnd;
     MSG msg;
@@ -66,6 +59,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
     static HWND wTextBox;   //幅
     static HWND hTextBox;   //高さ
     static HWND fTextBox;   //周波数
+    std::pair<int, int>rectSize = perlin.GetRectSize();
+
     switch (message) {
     case WM_CREATE: {
         // ボタンの作成
@@ -93,8 +88,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         GetClientRect(hwnd, &rect);
         rect.left = 10;
         rect.top = START_HEIGHT + 70;
-        rect.right = rect.left + rectWidth;
-        rect.bottom = rect.top + rectHeight;
+        rect.right = rect.left + rectSize.first;
+        rect.bottom = rect.top + rectSize.second;
         InvalidateRect(hwnd, &rect, TRUE);
         return 0;
     }
@@ -117,8 +112,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 GetClientRect(hwnd, &rectToClear);
                 rectToClear.left = 10;
                 rectToClear.top = START_HEIGHT + 70;
-                rectToClear.right = rectToClear.left + rectWidth;
-                rectToClear.bottom = rectToClear.top + rectHeight;
+                rectToClear.right = rectToClear.left + rectSize.first;
+                rectToClear.bottom = rectToClear.top + rectSize.second;
                 InvalidateRect(hwnd, &rectToClear, FALSE);
                 // 矩形を再描画
                 RECT rectToRedraw;
@@ -128,20 +123,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 rectToRedraw.right = rectToRedraw.left + newWidth;
                 rectToRedraw.bottom = rectToRedraw.top + newHeight;
                 InvalidateRect(hwnd, &rectToRedraw, TRUE);
-                rectWidth = newWidth;
-                rectHeight = newHeight;
+                rectSize.first = newWidth;
+                rectSize.second = newHeight;
+                perlin.SetRectSize(rectSize);
             }
         }
         if (LOWORD(wParam) == 2) {
-            parlin.Act(rectWidth, rectHeight);
+            perlin.Act(rectSize.first, rectSize.second);
             InvalidateRect(hwnd, NULL, TRUE);
             // 矩形を再描画前にクリア
             RECT rectToClear;
             GetClientRect(hwnd, &rectToClear);
             rectToClear.left = 10;
             rectToClear.top = START_HEIGHT + 70;
-            rectToClear.right = rectToClear.left + rectWidth;
-            rectToClear.bottom = rectToClear.top + rectHeight;
+            rectToClear.right = rectToClear.left + rectSize.first;
+            rectToClear.bottom = rectToClear.top + rectSize.second;
             InvalidateRect(hwnd, &rectToClear, FALSE);
         }
     }
@@ -152,23 +148,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
         HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255)); // 白でクリア
         SelectObject(hdc, hBrush);
-        Rectangle(hdc, 10, START_HEIGHT + 70, 10 + rectWidth, 70 + rectHeight);
+        Rectangle(hdc, 10, START_HEIGHT + 70, 10 + rectSize.first, 70 + rectSize.second);
 
         // テキストを描画
         SelectObject(hdc, hFont);  // フォントを選択
 
         TextOut(hdc, 10, START_HEIGHT + 0, TEXT("幅"), 1);
-        TextOut(hdc, 10, START_HEIGHT + 0, TEXT("高さ"), 1);
+        TextOut(hdc, 10, START_HEIGHT + 20, TEXT("高さ"), 2);
+        TextOut(hdc, 10, START_HEIGHT + 40, TEXT("周波数"), 3);
 
-        for (int x = 0; x < outputWidth; x += pixelSize) {
-            for (int y = 0; y < outputHeight; y += pixelSize) {
-                int color = RGB(255, 0, 0); // 赤色 (BGR オーダー)
-                RECT rect = { x, y, x + pixelSize, y + pixelSize };
-                HBRUSH hBrush = CreateSolidBrush(color);
-                FillRect(hdc, &rect, hBrush);
-                DeleteObject(hBrush);
-            }
-        }
+        //for (int x = 0; x < outputWidth; x += pixelSize) {
+        //    for (int y = 0; y < outputHeight; y += pixelSize) {
+        //        int color = RGB(255, 0, 0); // 赤色 (BGR オーダー)
+        //        RECT rect = { x, y, x + pixelSize, y + pixelSize };
+        //        HBRUSH hBrush = CreateSolidBrush(color);
+        //        FillRect(hdc, &rect, hBrush);
+        //        DeleteObject(hBrush);
+        //    }
+        //}
 
         EndPaint(hwnd, &ps);
         return 0;
