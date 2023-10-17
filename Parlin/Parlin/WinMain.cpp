@@ -99,6 +99,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         //周波数
         fTextBox = CreateWindow(TEXT("EDIT"), TEXT("0.1"), WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_RIGHT,
             60, START_HEIGHT + 40, 30, 20, hwnd, (HMENU)N_PERLIN_FREQENCY, nullptr, nullptr);
+        //倍率
         sTextBox= CreateWindow(TEXT("EDIT"), TEXT("10"), WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_RIGHT,
             170, START_HEIGHT + 0, 30, 20, hwnd, (HMENU)N_OUTPUT_SCALE, nullptr, nullptr);
         gTextBox = CreateWindow(TEXT("EDIT"), TEXT("10"), WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_RIGHT,
@@ -112,6 +113,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         rect.bottom = rect.top + DEFAULT_SIZE;
         InvalidateRect(hwnd, &rect, TRUE);
         return 0;
+        break;
     }
 
     case WM_COMMAND: {
@@ -122,36 +124,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             int newWidth = atoi(buffer);
             GetWindowTextA(hTextBox, buffer, sizeof(buffer));
             int newHeight = atoi(buffer);
+            GetWindowTextA(sTextBox, buffer, sizeof(buffer));
+            int newScale = atoi(buffer);
             if (newWidth > MAX_SIZE || newHeight > MAX_SIZE) {
                 MessageBox(NULL, TEXT("100より大きいサイズにしないで"), TEXT("警告"), MB_ICONWARNING | MB_OK);
             }
             else if (newWidth > 0) {
-
-                // 矩形を再描画前にクリア
-                RECT rectToClear;
-                GetClientRect(hwnd, &rectToClear);
-                rectToClear.left = 10;
-                rectToClear.top = START_HEIGHT + 70;
-                rectToClear.right = rectToClear.left + rectSize.first;
-                rectToClear.bottom = rectToClear.top + rectSize.second;
-                InvalidateRect(hwnd, &rectToClear, FALSE);
-                // 矩形を再描画
+                // 矩形を再描画範囲を指定
                 RECT rectToRedraw;
                 GetClientRect(hwnd, &rectToRedraw);
                 rectToRedraw.left = 10;
-                rectToRedraw.top = START_HEIGHT + 70;
-                rectToRedraw.right = rectToRedraw.left + newWidth;
-                rectToRedraw.bottom = rectToRedraw.top + newHeight;
+                rectToRedraw.top = START_HEIGHT + 80;
+                rectToRedraw.right = rectToRedraw.left + (newWidth* newScale);
+                rectToRedraw.bottom = rectToRedraw.top + (newHeight* newScale);
                 InvalidateRect(hwnd, &rectToRedraw, TRUE);
-                rectSize.first = newWidth;
-                rectSize.second = newHeight;
+                rectSize.first = newWidth* newScale;
+                rectSize.second = newHeight* newScale;
                 perlin.SetRectSize(rectSize);
             }
         }
         if (LOWORD(wParam) == B_PERLIN_ACT){    //パーリンノイズを実行
             char buffer[10];
             GetWindowTextA(fTextBox, buffer, sizeof(buffer));
-            int frequency = atoi(buffer);
+            float frequency = atoi(buffer);
             perlin.Act(frequency);
             InvalidateRect(hwnd, NULL, TRUE);
             // 矩形を再描画前にクリア
@@ -163,6 +158,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             rectToClear.bottom = rectToClear.top + rectSize.second;
             InvalidateRect(hwnd, &rectToClear, FALSE);
         }
+        break;
     }
 
     case WM_PAINT: {
@@ -171,7 +167,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
         HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255)); // 白でクリア
         SelectObject(hdc, hBrush);
-        Rectangle(hdc, 10, START_HEIGHT + 70, 10 + rectSize.first, 70 + rectSize.second);
+        Rectangle(hdc, 10, START_HEIGHT + 80, 10 + rectSize.first, 90 + rectSize.second);
 
         // テキストを描画
         SelectObject(hdc, hFont);  // フォントを選択
@@ -181,15 +177,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         TextOut(hdc, 10, START_HEIGHT + 40, TEXT("周波数"), 3);
         TextOut(hdc, 100, START_HEIGHT, TEXT("表示倍率"), 4);
         TextOut(hdc, 100, START_HEIGHT + 20, TEXT("グリッド間隔"), 6);
-        //for (int x = 0; x < outputWidth; x += pixelSize) {
-        //    for (int y = 0; y < outputHeight; y += pixelSize) {
-        //        int color = RGB(255, 0, 0); // 赤色 (BGR オーダー)
-        //        RECT rect = { x, y, x + pixelSize, y + pixelSize };
-        //        HBRUSH hBrush = CreateSolidBrush(color);
-        //        FillRect(hdc, &rect, hBrush);
-        //        DeleteObject(hBrush);
-        //    }
-        //}
+
+        //グリッドのサイズ
+        char buffer[10];
+        GetWindowTextA(gTextBox, buffer, sizeof(buffer));
+        int newGrid = atoi(buffer);
+        GetWindowTextA(sTextBox, buffer, sizeof(buffer));
+        int newScale = atoi(buffer);
+        for (int y = 0; y < rectSize.second; y += newGrid) {
+            for (int x = 0; x < rectSize.first; x += newGrid) {
+                COLORREF color = perlin.GetColor(x, y, newGrid);
+                RECT rect = { 10, START_HEIGHT + 80, newGrid * newScale, newGrid * newScale };
+                HBRUSH hBrush = CreateSolidBrush(color);
+                FillRect(hdc, &rect, hBrush);
+                DeleteObject(hBrush);
+            }
+        }
 
         EndPaint(hwnd, &ps);
         return 0;

@@ -43,6 +43,7 @@ private:
     int outputWidth;
     int outputHeight;
     std::vector<std::vector< COLORREF>>colorArray;
+    std::pair<int, int>GetRectSize();
 };
 
 //コンストラクタ
@@ -92,8 +93,8 @@ float PerlinNoise::grad(int hash, float x, float y) {
 void PerlinNoise::Act(float freqency) {
     Init();
     this->freqency = freqency;
-    outputWidth = rectWidth * freqency;
-    outputHeight = rectHeight * freqency;
+    outputWidth = rectWidth / freqency;
+    outputHeight = rectHeight / freqency;
 
     //vectorサイズを変更
     colorArray.resize(outputHeight, std::vector<COLORREF>(outputWidth, RGB(0, 0, 0)));
@@ -138,4 +139,8 @@ COLORREF PerlinNoise::GetColor(int tempX, int tempY,int outputScale) {  //引数は
 void PerlinNoise::SetRectSize(std::pair<int, int>temp) {
     rectWidth = temp.first;
     rectHeight = temp.second;
+}
+
+std::pair<int, int>PerlinNoise::GetRectSize() {
+    return std::pair<int, int>(rectWidth, rectHeight);
 }
