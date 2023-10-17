@@ -25,16 +25,12 @@ public:
     // グラデーション関数の前方宣言
     float grad(int hash, float x, float y);
     //実行関数
-    void Act(int sizeX, int sizeY, float frequency = 0.1f);
+    void Act(float frequency = 0.1f);
     //初期化
     void Init();
     //データ受け取り
     //色
-    void GetColor(int x, int y);
-    //矩形サイズ
-    std::pair<int, int> GetRectSize();
-    //描画するピクセルサイズ
-    std::pair<int, int>GetPixelSize();
+    COLORREF GetColor(int x, int y,int);
     //データセット
     void SetRectSize(std:: pair<int, int>temp);
 
@@ -44,9 +40,7 @@ private:
     float freqency; //周波数
     int rectWidth;  //矩形のサイズ
     int rectHeight;
-    int scale;  //倍率
-    int pixelSize;
-    int outputWidth;    //描画する際のサイズ
+    int outputWidth;
     int outputHeight;
     std::vector<std::vector< COLORREF>>colorArray;
 };
@@ -56,10 +50,9 @@ PerlinNoise::PerlinNoise() {
     std::fill(p, p + RAND_ARRAY_SIZE, 0);
     rectWidth = 30;
     rectHeight = 30;
-    scale = 1;
     freqency = 0.1f;
-    outputWidth = rectWidth * (scale / freqency);
-    outputHeight = rectHeight * (scale / freqency);
+    outputWidth = 0;
+    outputHeight = 0;
 }
 
 // パーリンノイズ関数
@@ -96,12 +89,15 @@ float PerlinNoise::grad(int hash, float x, float y) {
 }
 
 //実行関数
-void PerlinNoise::Act(int sizeX, int sizeY, float freqency) {
+void PerlinNoise::Act(float freqency) {
     Init();
     this->freqency = freqency;
-    colorArray.resize(sizeY, std::vector<COLORREF>(sizeX, RGB(0, 0, 0)));
-    outputWidth = rectWidth * (scale / freqency);
-    outputHeight = rectHeight * (scale / freqency);
+    outputWidth = rectWidth * freqency;
+    outputHeight = rectHeight * freqency;
+
+    //vectorサイズを変更
+    colorArray.resize(outputHeight, std::vector<COLORREF>(outputWidth, RGB(0, 0, 0)));
+
     for (int y = 0; y < outputHeight; y++) {
         for (int x = 0; x < outputWidth; x++) {
             perlinNoise(x + freqency, y * freqency);
@@ -114,15 +110,29 @@ void PerlinNoise::Init() {
     for (int e = 0; e < RAND_ARRAY_SIZE; e++) {
         p[e] = rand() % 256;
     }
+    colorArray.clear();
 }
 
 //データ受け取り
-void PerlinNoise::GetColor(int x, int y) {  //引数はoutputSizeに対応した座標
+COLORREF PerlinNoise::GetColor(int tempX, int tempY,int outputScale) {  //引数はoutputSizeに対応した座標
+    if (tempX >= outputWidth || tempY >= outputHeight) {
+        return RGB(0, 0, 0);
+    }
+    int sizeX = outputWidth / outputScale;
+    int sizeY = outputHeight / outputScale;
+    int r = 0;
+    int g = 0;
+    int b = 0;
 
-}
+    for (int y = tempY - sizeY; y < tempY; y++) {
+        for (int x = tempX - sizeX; x < tempX; x++) {
+            r += GetRValue(colorArray[y][x]);
+            g += GetGValue(colorArray[y][x]);
+            b += GetBValue(colorArray[y][x]);
+        }
+    }
 
-std::pair<int, int> PerlinNoise::GetRectSize() {
-    return std::pair<int, int>(rectWidth, rectHeight);
+    return RGB(r / (sizeX * sizeY), g / (sizeX * sizeY), b / (sizeX * sizeY));
 }
 
 void PerlinNoise::SetRectSize(std::pair<int, int>temp) {

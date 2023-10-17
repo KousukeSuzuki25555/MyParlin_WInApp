@@ -8,15 +8,28 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 #define MAX_SIZE	(100)
 #define START_HEIGHT    (10)
+#define DEFAULT_SIZE    (30)
+
+enum WINDOW_NUM {   //buttonなどの番号
+    C_ORIGINAL_PERLIN,
+    B_SIZE_CHANGE,
+    B_PERLIN_ACT,
+    N_PERLIN_WIDTH,
+    N_PERLIN_HEIGHT,
+    N_PERLIN_FREQENCY,
+    N_OUTPUT_SCALE,
+    N_GRID_SPACING
+};
 
 //グローバル変数
 PerlinNoise perlin;
 HFONT hFont;
+std::pair<int, int>rectSize;
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     _In_ PSTR szCmdLine, _In_ int iCmdShow) {
     srand((unsigned)time(NULL));
-    perlin.Act(30, 30, 0.1f);
+    perlin.Act(0.1f);
     static TCHAR szAppName[] = TEXT("PerlinNoise");
     HWND hwnd;
     MSG msg;
@@ -59,43 +72,50 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
     static HWND wTextBox;   //幅
     static HWND hTextBox;   //高さ
     static HWND fTextBox;   //周波数
-    std::pair<int, int>rectSize = perlin.GetRectSize();
+    static HWND sTextBox;   //表示倍率
+    static HWND gTextBox;   //グリッド間隔
+
+    
 
     switch (message) {
     case WM_CREATE: {
         // ボタンの作成
         //サイズ変更ボタン
         CreateWindow(TEXT("BUTTON"), TEXT("Decrease Size"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            150, START_HEIGHT + 20, 150, 20, hwnd, (HMENU)1, nullptr, nullptr);
+            220, START_HEIGHT + 20, 150, 20, hwnd, (HMENU)B_SIZE_CHANGE, nullptr, nullptr);
         //ParlinNoise実行
         CreateWindow(TEXT("BUTTON"), TEXT("Let's Perlin"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            150, START_HEIGHT + 40, 150, 20, hwnd, (HMENU)2, nullptr, nullptr);
+            220, START_HEIGHT + 40, 150, 20, hwnd, (HMENU)B_PERLIN_ACT, nullptr, nullptr);
         //チェックボックス
         CreateWindow(L"BUTTON", L"CHECKBOX", WS_CHILD | WS_VISIBLE | BS_CHECKBOX,
-            150, START_HEIGHT + 00, 150, 20, hwnd, (HMENU)3, nullptr, nullptr);
+            220, START_HEIGHT + 00, 150, 20, hwnd, (HMENU)C_ORIGINAL_PERLIN, nullptr, nullptr);
         // テキストボックスの作成
         //幅
         wTextBox = CreateWindow(TEXT("EDIT"), TEXT("30"), WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_RIGHT,
-            80, START_HEIGHT + 0, 30, 20, hwnd, (HMENU)4, nullptr, nullptr);
+            60, START_HEIGHT + 0, 30, 20, hwnd, (HMENU)N_PERLIN_WIDTH, nullptr, nullptr);
         //高さ
         hTextBox = CreateWindow(TEXT("EDIT"), TEXT("30"), WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_RIGHT,
-            80, START_HEIGHT + 20, 30, 20, hwnd, (HMENU)5, nullptr, nullptr);
+            60, START_HEIGHT + 20, 30, 20, hwnd, (HMENU)N_PERLIN_HEIGHT, nullptr, nullptr);
         //周波数
         fTextBox = CreateWindow(TEXT("EDIT"), TEXT("0.1"), WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_RIGHT,
-            80, START_HEIGHT + 40, 30, 20, hwnd, (HMENU)6, nullptr, nullptr);
+            60, START_HEIGHT + 40, 30, 20, hwnd, (HMENU)N_PERLIN_FREQENCY, nullptr, nullptr);
+        sTextBox= CreateWindow(TEXT("EDIT"), TEXT("10"), WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_RIGHT,
+            170, START_HEIGHT + 0, 30, 20, hwnd, (HMENU)N_OUTPUT_SCALE, nullptr, nullptr);
+        gTextBox = CreateWindow(TEXT("EDIT"), TEXT("10"), WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_RIGHT,
+            170, START_HEIGHT + 20, 30, 20, hwnd, (HMENU)N_GRID_SPACING, nullptr, nullptr);
         // 初期の矩形描画
         RECT rect;
         GetClientRect(hwnd, &rect);
         rect.left = 10;
         rect.top = START_HEIGHT + 70;
-        rect.right = rect.left + rectSize.first;
-        rect.bottom = rect.top + rectSize.second;
+        rect.right = rect.left + DEFAULT_SIZE;
+        rect.bottom = rect.top + DEFAULT_SIZE;
         InvalidateRect(hwnd, &rect, TRUE);
         return 0;
     }
 
     case WM_COMMAND: {
-        if (LOWORD(wParam) == 1) {
+        if (LOWORD(wParam) == B_SIZE_CHANGE) {
             // テキストボックスの内容が変更されたとき
             char buffer[10];
             GetWindowTextA(wTextBox, buffer, sizeof(buffer));
@@ -128,8 +148,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 perlin.SetRectSize(rectSize);
             }
         }
-        if (LOWORD(wParam) == 2) {
-            perlin.Act(rectSize.first, rectSize.second);
+        if (LOWORD(wParam) == B_PERLIN_ACT){    //パーリンノイズを実行
+            char buffer[10];
+            GetWindowTextA(fTextBox, buffer, sizeof(buffer));
+            int frequency = atoi(buffer);
+            perlin.Act(frequency);
             InvalidateRect(hwnd, NULL, TRUE);
             // 矩形を再描画前にクリア
             RECT rectToClear;
@@ -156,7 +179,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         TextOut(hdc, 10, START_HEIGHT + 0, TEXT("幅"), 1);
         TextOut(hdc, 10, START_HEIGHT + 20, TEXT("高さ"), 2);
         TextOut(hdc, 10, START_HEIGHT + 40, TEXT("周波数"), 3);
-
+        TextOut(hdc, 100, START_HEIGHT, TEXT("表示倍率"), 4);
+        TextOut(hdc, 100, START_HEIGHT + 20, TEXT("グリッド間隔"), 6);
         //for (int x = 0; x < outputWidth; x += pixelSize) {
         //    for (int y = 0; y < outputHeight; y += pixelSize) {
         //        int color = RGB(255, 0, 0); // 赤色 (BGR オーダー)
