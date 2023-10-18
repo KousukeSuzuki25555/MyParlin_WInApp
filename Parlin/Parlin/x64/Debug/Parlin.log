@@ -1,7 +1,6 @@
 ﻿  WinMain.cpp
-C:\Users\KOUSUKE SUZUKI\OneDrive\デスクトップ\MyParlin_WInApp\Parlin\Parlin\Perlin.h(96,29): warning C4244: '=': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\KOUSUKE SUZUKI\OneDrive\デスクトップ\MyParlin_WInApp\Parlin\Parlin\Perlin.h(97,31): warning C4244: '=': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\KOUSUKE SUZUKI\OneDrive\デスクトップ\MyParlin_WInApp\Parlin\Parlin\WinMain.cpp(68,15): warning C4244: 'return': 'WPARAM' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\KOUSUKE SUZUKI\OneDrive\デスクトップ\MyParlin_WInApp\Parlin\Parlin\WinMain.cpp(149,29): warning C4244: '初期化中': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\Users\KOUSUKE SUZUKI\OneDrive\デスクトップ\MyParlin_WInApp\Parlin\Parlin\WinMain.cpp(209): warning C4715: 'WndProc': 値を返さないコントロール パスがあります。
-  Parlin.vcxproj -> C:\Users\KOUSUKE SUZUKI\OneDrive\デスクトップ\MyParlin_WInApp\Parlin\x64\Debug\Parlin.exe
+C:\Users\Kousuke25555\Desktop\MyPerlin_WInApp\Parlin\Parlin\Perlin.h(92,27): warning C4244: '=': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\Kousuke25555\Desktop\MyPerlin_WInApp\Parlin\Parlin\WinMain.cpp(72,15): warning C4244: 'return': 'WPARAM' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\Kousuke25555\Desktop\MyPerlin_WInApp\Parlin\Parlin\WinMain.cpp(193,24): warning C4244: '初期化中': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\Users\Kousuke25555\Desktop\MyPerlin_WInApp\Parlin\Parlin\WinMain.cpp(230): warning C4715: 'WndProc': 値を返さないコントロール パスがあります。
+  Parlin.vcxproj -> C:\Users\Kousuke25555\Desktop\MyPerlin_WInApp\Parlin\x64\Debug\Parlin.exe
