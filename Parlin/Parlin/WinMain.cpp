@@ -190,19 +190,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
         int gridSize = perlin.GetGridSize(newGrid);
         int rectSize = perlin.GetRectSize();
-        int outputSize = rectSize * newScale * perlin.GetFre();
-
-
-        for (int y = 0; y < rectSize; y += gridSize) {
-            for (int x = 0; x < rectSize; x += gridSize) {
-                COLORREF color = perlin.GetColor(x, y,gridSize);
-                RECT rect = { 10 + (x / gridSize)*(outputSize/gridSize), START_HEIGHT + 80 + (y / gridSize) * (outputSize / gridSize) ,
-                    10 + ((x / gridSize)+1) * (outputSize / gridSize) , START_HEIGHT + 80 + ((y / gridSize)+1) * (outputSize / gridSize) };
+        //int outputSize = rectSize * newScale * perlin.GetFre();
+        float freqe = perlin.GetFre();
+        int sizeNum = rectSize * newGrid;
+        //newScale/newGrid
+        for (int y = 0; y < sizeNum; y++) {
+            for (int x = 0; x < sizeNum; x++) {
+                COLORREF color = perlin.GetColor(x / (freqe*newGrid), y / (freqe*newGrid), gridSize);
+                RECT rect = { 10 + (x * newScale / newGrid),START_HEIGHT + 80 + (y * newScale / newGrid),
+                10 + (x + 1) * newScale / newGrid ,START_HEIGHT + 80 + (y + 1) * newScale / newGrid };
                 HBRUSH hBrush = CreateSolidBrush(color);
                 FillRect(hdc, &rect, hBrush);
                 DeleteObject(hBrush);
             }
         }
+
+        //for (int y = 0; y < rectSize; y += gridSize) {
+        //    for (int x = 0; x < rectSize; x += gridSize) {
+        //        COLORREF color = perlin.GetColor(x, y,gridSize);
+        //        /*RECT rect = { 10 + (x / gridSize)*(outputSize/gridSize), START_HEIGHT + 80 + (y / gridSize) * (outputSize / gridSize) ,
+        //            10 + ((x / gridSize)+1) * (outputSize / gridSize) , START_HEIGHT + 80 + ((y / gridSize)+1) * (outputSize / gridSize) };*/
+        //        RECT rect = { 10 + x, START_HEIGHT + 80 + y ,
+        //           10 + (x  + 1 * gridSize), START_HEIGHT + 80 + (y  + 1 * gridSize) };
+        //        HBRUSH hBrush = CreateSolidBrush(color);
+        //        FillRect(hdc, &rect, hBrush);
+        //        DeleteObject(hBrush);
+        //    }
+        //}
 
 
         EndPaint(hwnd, &ps);

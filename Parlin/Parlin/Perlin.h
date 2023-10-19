@@ -133,18 +133,12 @@ COLORREF PerlinNoise::GetColor(int tempX, int tempY,int gridSize) {  //à¯êîÇÕout
 }
 
 int PerlinNoise::GetRectSize() {
-    return outputSize;
+    return rectSize;
 }
 
 int PerlinNoise::GetGridSize(int gridScale) {
     return outputSize / (rectSize * gridScale);
 }
-
-//float PerlinNoise::GetOutputGridSize(int gridScale) {
-//    //return rectSize / (gridScale / freqency);
-//    //return (float)(1.0f / (float)rectSize * gridScale * freqency);
-//
-//}
 
 float PerlinNoise::GetFre() {
     return freqency;
